@@ -16,6 +16,8 @@
 #                - Output Decision
 #   - Stage-II GAN: image refinement
 #        - TBA
+import glob
+import os
 
 # What we expect from model:
 #   - Input: Sentence
@@ -24,39 +26,22 @@
 import tensorflow_hub as hub
 from Stage1 import generator as gen_s1
 from Stage1 import discriminator as disc_s1
+from Stage1 import trainer as train_s1
 from ConditioningAugmentation import text_encoder as txt_enc
+from Data import loader as data_loader
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-model = gen_s1.build()
 
-use_model_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
-embed = hub.load(use_model_url)
+data = data_loader.load_dataset()
 
-sentences = ["this bird has large, black, webbed feet, and is covered in gray plumage."]
-
-embeddings = txt_enc.get_embedding(sentences)
-
-print(embeddings)
-
-noise = tf.random.normal([1, 512])
-
-emb_noise = embeddings + noise
-
-generated_images = model.predict(emb_noise)
+gen_model = gen_s1.build()
 
 disc_model = disc_s1.build()
 
-disc_model.summary()
-
-decision = disc_model.predict([generated_images, embeddings])
-
-print(decision)
-
-# Visualize the generated images
-plt.imshow(generated_images[0])
-plt.axis('off')
-plt.show()
+train_s1.train(data, 600,
+               gen_model, disc_model,
+               tf.keras.optimizers.Adam(2e-4), tf.keras.optimizers.Adam(2e-4))
 
 
 

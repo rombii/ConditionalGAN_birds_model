@@ -3,17 +3,17 @@ from Helper.blocks import down_sampling_block
 
 
 def build():
-    Nd = 3  # Nd dimensions
-    Md = 64  # Md dimensions
+    input_size = 1024  # Size of the concatenated text and noise vector
+    filters = 64
 
     # Input layers
-    text_embedding = tf.keras.layers.Input(shape=(512,))
-    image_input = tf.keras.layers.Input(shape=(Md, Md, 3))
+    text_embedding = tf.keras.layers.Input(shape=(input_size,))
+    image_input = tf.keras.layers.Input(shape=(64, 64, 3))
 
     # Compress text embedding
-    compressed_text = tf.keras.layers.Dense(Nd, use_bias=False)(text_embedding)
+    compressed_text = tf.keras.layers.Dense(3, use_bias=False)(text_embedding)
 
-    # Spatially replicate to form Md x Md x Nd tensor
+    # Spatially replicate to form 64 x 64 x 3 tensor
     replicated_text = tf.tile(tf.expand_dims(tf.expand_dims(compressed_text, 1), 1), [1, 4, 4, 512])
 
     # Down-sampling blocks for the image

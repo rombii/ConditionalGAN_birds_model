@@ -1,14 +1,16 @@
 import tensorflow_hub as hub
+import tensorflow as tf
 
 
 def get_embedding(sentences):
     # Load the Universal Sentence Encoder model
-    use_model_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
+    use_model_url = 'ConditioningAugmentation'
     embed = hub.load(use_model_url)
 
     # Get embeddings for the sentences
     embeddings = embed(sentences)
 
-    # Print the embeddings
+    # Return the embeddings without reshaping
     return embeddings
+
 

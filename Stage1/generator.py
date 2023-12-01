@@ -3,7 +3,7 @@ from Helper.blocks import up_sampling_block
 
 
 def build():
-    input_size = 512  # Size of the input noise vector
+    input_size = 1024  # Size of the concatenated text and noise vector
     filters = 64
 
     # Input layer
