@@ -1,60 +1,43 @@
-# Structure of StackGAN:
-#   - Conditioning Augmentation
-#         - Input Sentence
-#         - Text Encoder
-#         - Conditional Vectorizer
-#   - Stage-I GAN: text-to-image mapping
-#         - Generator
-#                - Input Conditional Vector and noise
-#                - Upsampling from vector to image
-#                - Output Image
-#         - Discriminator
-#                - Input Image, Text Embedding
-#                - Downsampling from image to vector
-#                - Downsampling from text embedding to 3d vector
-#                - Concatenate the two vectors
-#                - Output Decision
-#   - Stage-II GAN: image refinement
-#        - TBA
-import glob
-import os
-
-# What we expect from model:
-#   - Input: Sentence
-#   - Output: Image
-
-import tensorflow_hub as hub
-from Stage1 import generator as gen_s1
-from Stage1 import discriminator as disc_s1
-from Stage1 import trainer as train_s1
-from ConditioningAugmentation import text_encoder as txt_enc
-from Data import loader as data_loader
-import matplotlib.pyplot as plt
 import tensorflow as tf
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_virtual_device_configuration(gpus[0],
+        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=5120)])
+
+from Model import generator as gen
+from Model import discriminator as disc
+from Model import trainer as train
+
+from Data import loader as data_loader
 
 
 data = data_loader.load_dataset()
 
-gen_model = gen_s1.build()
+gen_model = gen.build()
 
-disc_model = disc_s1.build()
-
-train_s1.train(data, 600,
-               gen_model, disc_model,
-               tf.keras.optimizers.Adam(2e-4), tf.keras.optimizers.Adam(2e-4))
+disc_model = disc.build()
 
 
+epochs = 1000
 
+gen_schedule = tf.keras.optimizers.schedules.PolynomialDecay(
+    initial_learning_rate=0.0001,
+    end_learning_rate=0.0,
+    decay_steps=len(data) * epochs,
+)
 
+desc_schedule = tf.keras.optimizers.schedules.PolynomialDecay(
+    initial_learning_rate=0.0001,
+    end_learning_rate=0.0,
+    decay_steps=len(data) * epochs,
+)
 
+gen_optimizer = tf.keras.optimizers.Adam(learning_rate=gen_schedule, beta_1=0.5)
+disc_optimizer = tf.keras.optimizers.Adam(learning_rate=desc_schedule, beta_1=0.5)
 
-
-
-
-
-
-
-
+train.train(data, epochs,
+            gen_model, disc_model,
+            gen_optimizer, disc_optimizer)
 
 
 
