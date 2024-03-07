@@ -8,4 +8,4 @@ Whole tree should look like this:
 
 ![image](https://github.com/rombii/ConditionalGAN_birds_model/assets/46005468/be74df53-b4e3-46fb-99fd-97deec91c6f9)
 
-after that just run main.py file
+after that you need to reformat dataset, check if any unwanted images didn't pass through and run main.py file.
